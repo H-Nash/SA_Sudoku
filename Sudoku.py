@@ -26,4 +26,27 @@ def PrintSudoku(sudoku):
             line += str(sudoku[i,j])+" "
         print(line)
 
+def CalcErrors(sudoku):
+    print("\n")
+    errors = 0
+    tempCol = [0] * 9
+    tempRow = [0] * 9
+
+    for i in range (0,9):
+        tempCol[i] = sudoku[i,0]
+        for j in range(0,9):
+            tempRow[j] = sudoku[i,j]
+        errors += CheckRow(tempRow)
+    return(errors)
+
+def CheckRow(row):
+    errors = 0
+    for i in range (0,9):
+       for j in range (0,9):
+           if j == row[i]:
+               errors += 1
+    print(errors)
+    return(errors)
+
 PrintSudoku(sudoku)
+CalcErrors(sudoku)
