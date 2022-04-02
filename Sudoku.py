@@ -32,19 +32,37 @@ def CalcErrors(sudoku):
     tempCol = [0] * 9
     tempRow = [0] * 9
 
+    #Row Errors
+    print ("\nRow Error Checking In Progress")
+    print ("------------------------------")
     for i in range (0,9):
-        tempCol[i] = sudoku[i,0]
+        line = ""
         for j in range(0,9):
             tempRow[j] = sudoku[i,j]
+            line += str(tempRow[j]) + " "
+        print(line)
         errors += CheckRow(tempRow)
+
+    #Column Errors
+    print ("\nColumn Error Checking In Progress")
+    print ("---------------------------------")
+    for i in range (0,9):
+        line = ""
+        for j in range (0,9):
+            tempCol[j] = sudoku[j,i]
+            line += str(tempCol[j]) + " "
+        print(line)
+        errors += CheckCol(tempCol)
+
     return(errors)
 
 def CheckRow(row):
-    errors = 0
-    for i in range (0,9):
-       for j in range (0,9):
-           if j == row[i]:
-               errors += 1
+    errors = len(row) - len(np.unique(row))
+    print(errors)
+    return(errors)
+
+def CheckCol(col):
+    errors = len(col) - len(np.unique(col))
     print(errors)
     return(errors)
 
