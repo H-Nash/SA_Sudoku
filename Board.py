@@ -5,11 +5,13 @@ import time as t
 
 import colorama as rgb
 
+BLANK = 0
+
 # https://stackoverflow.com/questions/45471152/how-to-create-a-sudoku-puzzle-in-python
 class Board:
     def __init__(self, seed =None):
         self.R = r.Random().seed(t.time())
-        self.board = np.full((9,9),-1)
+        self.board = np.full((9,9),0)
         self.c_map = np.full((9,9),0) #for color mapping the output
         if seed is not None:
             self.__fill(seed)
@@ -20,18 +22,18 @@ class Board:
         for i in range(seed):
             x = r.randrange(0,9)
             y = r.randrange(0,9)
-            n = r.randrange(0,9)
+            n = r.randrange(1,9)
 
             self.board[y,x] = n
             
             iter = 1
-            while(self.board_error(gt=-1) > 0):
+            while(self.board_error(gt=BLANK) > 0):
                 if iter%10 == 0:
-                    self.board[y,x] = -1
+                    self.board[y,x] = BLANK
                     x = r.randrange(0,9)
                     y = r.randrange(0,9)
 
-                n = r.randrange(0,9)
+                n = r.randrange(1,9)
                 self.board[y,x] = n
             self.c_map[y,x] = 1
             
@@ -40,8 +42,8 @@ class Board:
         colors = [rgb.Fore.WHITE, rgb.Fore.GREEN, rgb.Fore.RED]
 
         if show_errors:
-            self.board_error(gt=-1, color=True)
-            
+            self.board_error(gt=BLANK, color=True)
+
         for y in range(9):
             if y > 0 and y%3 == 0:
                 print(colors[0]+''.join(['-' for i in range(21)]))
@@ -49,7 +51,7 @@ class Board:
             for x in range(9):
                 if x > 0 and x%3 == 0:
                     print(colors[0]+"|", end=" ")
-                o = str(self.board[y,x]) if self.board[y,x] > -1 else " "
+                o = str(self.board[y,x]) if self.board[y,x] > BLANK else " "
                 print(colors[self.c_map[y,x]] + o, end=" ")
 
             print()
@@ -103,7 +105,7 @@ class Board:
     def colorize_errors(self, gt=None):
         for y in range(9):
             for x in range(9):
-                if self.cell_error(x,y, -1) > 0:
+                if self.cell_error(x,y, BLANK) > 0:
                     self.c_map[y,x] = 2
                 else:
                     if self.c_map[y,x] != 1:
