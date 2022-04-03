@@ -13,14 +13,17 @@ class Board:
     #HELPER functions
     def peer_horizon(self, cell): # <-->
         x,y = cell #tuple
-        return self.board[y][:]
+        return list(self.board[y][:])
     
     def peer_vertical(self,cell): # ^|v
         x,y = cell #tuple
-        return self.board[:][x]
+        return list(self.board[:][x])
     
     def peer_block(self,cell): # get 3x3 grid segment :: return as 1d list
         x,y = cell #tuple
         bc0 = lambda c : 3*(c//3)
         bc1 = lambda c: 3*( (c//3) + 1 )
         return list(self.board[bc0(y):bc1(y)][bc0(x):bc1(x)].flatten()) 
+
+    def error_check(region): # region take as list from peer functions
+        return (9 - len(set(region)))
