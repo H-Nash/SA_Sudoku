@@ -59,25 +59,31 @@ class Board:
         
 
     #HELPER functions
-    def peer_horizon(self, cell, gt=None): # <-->
+    def peer_horizon(self, cell, gt=None, board=None): # <-->
+        board = self.board if board is None else board
+
         x,y = cell #tuple
-        temp = self.board[y,:]
+        temp = board[y,:]
         if gt is not None:
             temp = temp[temp>gt]
         return list(temp)
     
-    def peer_vertical(self,cell, gt=None): # ^|v
+    def peer_vertical(self,cell, gt=None, board=None): # ^|v
+        board = self.board if board is None else board
+
         x,y = cell #tuple
-        temp = self.board[:,x]
+        temp = board[:,x]
         if gt is not None:
             temp = temp[temp>gt]
         return list(temp)
     
-    def peer_block(self,cell, gt=None): # get 3x3 grid segment :: return as 1d list
+    def peer_block(self,cell, gt=None, board=None): # get 3x3 grid segment :: return as 1d list
+        board = self.board if board is None else board
+        
         x,y = cell #tuple
         bc0 = lambda c : 3*(c//3)
         bc1 = lambda c: 3*( (c//3) + 1 )
-        temp = self.board[bc0(y):bc1(y)][bc0(x):bc1(x)].flatten()
+        temp = board[bc0(y):bc1(y)][bc0(x):bc1(x)].flatten()
         if gt is not None:
             temp = temp[temp>gt]
         return list(temp) 
@@ -86,7 +92,8 @@ class Board:
         return (len(region) - len(set(region)))
     
     # Sum of error from all regions for given cell
-    def cell_error(self, x,y, gt=None):
+    def cell_error(self, x,y, gt=None, board=None):
+        board = self.board if board is None else board
         c = (x, y)
         regions = [self.peer_horizon(c, gt), self.peer_vertical(c, gt), self.peer_block(c, gt)]
         err_batt = sum([self.error_check(region) for region in regions])
@@ -110,3 +117,24 @@ class Board:
                 else:
                     if self.c_map[y,x] != 1:
                         self.c_map[y,x] = 0
+    
+    def error_matrix(self, board=None, cmap=None):
+        board = self.board if board is None else board
+        cmap = self.c_map if cmap is None else cmap
+
+        arr = np.asarray([
+            [
+                self.cell_error(x,y, board=board) for x in range(9)
+                ] for y in range(9)
+        ]) * (cmap - 1)
+        return arr
+    
+    def get_board(self):
+        return self.board
+    
+    def value(self, x,y,v=None):
+        if (x > -1 and x < 10) and (y > -1 and y < 10):
+            if v is not None:
+                self.board[y,x] = v
+            else:
+                return self.board[y,x]
