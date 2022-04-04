@@ -23,4 +23,4 @@ class Board:
         x,y = cell #tuple
         bc0 = lambda c : 3*(c//3)
         bc1 = lambda c: 3*( (c//3) + 1 )
-        return list(self.board[bc0(y):bc1(y)][bc0(x):bc1(x)].flatten()) 
+        return list(self.board[bc0(y):bc1(y)][bc0(x):bc1(x)].flatten()) # flatten and translate to list
