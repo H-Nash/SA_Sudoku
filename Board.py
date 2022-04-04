@@ -79,7 +79,7 @@ class Board:
     
     def peer_block(self,cell, gt=None, board=None): # get 3x3 grid segment :: return as 1d list
         board = self.board if board is None else board
-        
+
         x,y = cell #tuple
         bc0 = lambda c : 3*(c//3)
         bc1 = lambda c: 3*( (c//3) + 1 )
@@ -131,6 +131,9 @@ class Board:
     
     def get_board(self):
         return self.board
+    
+    def get_mask(self):
+        return self.c_map
     
     def value(self, x,y,v=None):
         if (x > -1 and x < 10) and (y > -1 and y < 10):

@@ -10,4 +10,7 @@ if __name__ == "__main__":
 
     steel = Blacksmith(sudoku)
 
-    print(sudoku.error_matrix())
+    steel.apply_mask()
+    print(steel.next_game)
+    steel.new_cost()
+    print(steel.next_cost)
