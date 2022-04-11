@@ -82,7 +82,7 @@ class Board:
 
         x,y = cell #tuple
         bc0 = lambda c : 3*(c//3)
-        bc1 = lambda c: 3*( (c//3) + 1 )
+        bc1 = lambda c: 3*((c//3)+1)-1
         temp = board[bc0(y):bc1(y)][bc0(x):bc1(x)].flatten()
         if gt is not None:
             temp = temp[temp>gt]
@@ -91,7 +91,7 @@ class Board:
     def error_check(self, region): # region take as list from peer functions
         return (len(region) - len(set(region)))
     
-    # Sum of error from all regions for given cell
+    #Sum of error from all regions for given cell
     def cell_error(self, x,y, gt=None, board=None):
         board = self.board if board is None else board
         c = (x, y)
@@ -104,14 +104,13 @@ class Board:
         board = self.board if board is None else board
         c = (x, y)
         if board[y,x] > 0:
-            return list()
+            return []
         regions = [self.peer_horizon(c, gt=0), self.peer_vertical(c, gt=0), self.peer_block(c, gt=0)]
-        
-        collect = list()
+        collect = set()
         for r in regions:
-            collect += r
-        
-        return list( set(collect).symmetric_difference(set(M)) )
+            collect = set(collect).union(set(r))
+        collect = set(collect).symmetric_difference(set(M))
+        return collect
 
     def board_error(self, gt=None, color=False):
         o = sum([
@@ -132,27 +131,27 @@ class Board:
                     if self.c_map[y,x] != 1:
                         self.c_map[y,x] = 0
     
-    def error_matrix(self, board=None, cmap=None):
-        board = self.board if board is None else board
-        cmap = self.c_map if cmap is None else cmap
+    # def error_matrix(self, board=None, cmap=None):
+    #     board = self.board if board is None else board
+    #     cmap = self.c_map if cmap is None else cmap
 
-        arr = np.asarray([
-            [
-                self.cell_error(x,y, board=board) for x in range(9)
-                ] for y in range(9)
-        ]) * (cmap - 1)
-        return arr
+    #     arr = np.asarray([
+    #         [
+    #             self.cell_error(x,y, board=board) for x in range(9)
+    #             ] for y in range(9)
+    #     ]) * (cmap - 1)
+    #     return arr
     
     def prob_matrix(self, board=None, cmap=None):
         board = self.board if board is None else board
         cmap = self.c_map if cmap is None else cmap
         prob_arr = np.asarray([
             [
-                self.cell_possibilities(x,y, board=board) for x in range(9)
+                list(self.cell_possibilities(x,y, board=board)) for x in range(9)
                 ] for y in range(9)
         ])
         arr = np.asarray([ [ len(x) for x in y ] for y in prob_arr ]) * abs(cmap-1)
-        return list(prob_arr, arr)
+        return list([prob_arr, arr])
     
     def get_board(self):
         return self.board

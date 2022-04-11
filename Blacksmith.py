@@ -8,8 +8,8 @@ class Blacksmith:
     
     def __init__(self,game):
         self.game = game
-        self.cost_hist = game.error_matrix()
-        self.last_game = game.get_board()
+        #self.cost_hist = game.error_matrix()
+        #self.last_game = game.get_board()
 
         self.next_game = None
         self.next_cost = None
@@ -24,12 +24,20 @@ class Blacksmith:
     
     def apply_mask(self):
         self.next_game = self.last_game + (np.random.randint(2,size=np.shape(self.last_game)) * np.abs(self.mask_filter-1))
-    
+
     def new_cost(self):
-        #self.next_cost = self.game.error_matrix(board=self.next_game, cmap=self.mask_filter)
-        self.nexts, self.next_cost = self.game.prob_matrix(board=self.next_game, cmap=self.mask_filter)
-        self.next_state = self.next_cost[self.next_cost > np.where(self.next_cost == self.next_cost[self.next_cost > 0])]
-        print(self.next_cost)
+        self.nexts, self.next_cost = self.game.prob_matrix(cmap=self.mask_filter)
+        y,x = np.where( self.next_cost == self.next_cost[self.next_cost > 0].min())
+        #print(self.next_cost)
+        for l in range(len(x)):
+            for v in self.nexts[y[l],x[l]]:
+                self.game.value(x[l],y[l],v)
+                if(self.game.cell_error(x[l],y[l], gt=0) > 0):
+                    self.game.value(x[l],y[l],0)
+                else:
+                    return
+            self.game.value(x[l],y[l],0)
+        #self.next_state = self.next_cost[self.next_cost > np.where(self.next_cost == self.next_cost[self.next_cost > 0])]
 
 
                     
