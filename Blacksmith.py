@@ -26,8 +26,10 @@ class Blacksmith:
         self.next_game = self.last_game + (np.random.randint(2,size=np.shape(self.last_game)) * np.abs(self.mask_filter-1))
     
     def new_cost(self):
-        self.next_cost = self.game.error_matrix(board=self.next_game, cmap=self.mask_filter)
-    
+        #self.next_cost = self.game.error_matrix(board=self.next_game, cmap=self.mask_filter)
+        self.nexts, self.next_cost = self.game.prob_matrix(board=self.next_game, cmap=self.mask_filter)
+        self.next_state = self.next_cost[self.next_cost > np.where(self.next_cost == self.next_cost[self.next_cost > 0])]
+        print(self.next_cost)
 
 
                     

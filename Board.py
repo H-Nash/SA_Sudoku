@@ -98,6 +98,20 @@ class Board:
         regions = [self.peer_horizon(c, gt), self.peer_vertical(c, gt), self.peer_block(c, gt)]
         err_batt = sum([self.error_check(region) for region in regions])
         return err_batt
+    
+    def cell_possibilities(self, x, y, board=None):
+        M = [i for i in range(1,10)]
+        board = self.board if board is None else board
+        c = (x, y)
+        if board[y,x] > 0:
+            return list()
+        regions = [self.peer_horizon(c, gt=0), self.peer_vertical(c, gt=0), self.peer_block(c, gt=0)]
+        
+        collect = list()
+        for r in regions:
+            collect += r
+        
+        return list( set(collect).symmetric_difference(set(M)) )
 
     def board_error(self, gt=None, color=False):
         o = sum([
@@ -128,6 +142,17 @@ class Board:
                 ] for y in range(9)
         ]) * (cmap - 1)
         return arr
+    
+    def prob_matrix(self, board=None, cmap=None):
+        board = self.board if board is None else board
+        cmap = self.c_map if cmap is None else cmap
+        prob_arr = np.asarray([
+            [
+                self.cell_possibilities(x,y, board=board) for x in range(9)
+                ] for y in range(9)
+        ])
+        arr = np.asarray([ [ len(x) for x in y ] for y in prob_arr ]) * abs(cmap-1)
+        return list(prob_arr, arr)
     
     def get_board(self):
         return self.board
