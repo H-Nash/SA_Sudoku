@@ -1,4 +1,5 @@
 import os, sys
+from xmlrpc.client import FastMarshaller
 
 class Cell:
     def __init__(self, start_value):
@@ -7,13 +8,20 @@ class Cell:
         self.probability = lambda: 1/len(self.candidates) if len(self.candidates) > 0 else -1
         self.static = False
 
-    def setValue(self, value):
+    def setValue(self, value, u=False):
         if value in self.candidates:
             self.value = value
-            self.candidates.remove(value)
+            if u == False:
+                self.candidates = set()
         #self.candidates = self.drop(value)
 
+    def put(self,value):
+        self.candidates.add(value)
+
     def drop(self, value):
+        if type(value) == type(set()):
+            self.candidates -= value
+            return
         try:
             self.candidates.remove(value)
         except KeyError:
@@ -33,3 +41,4 @@ class Cell:
 
     def __hash__(self):
         return hash(self.value)
+    def __lt__(self, other): return self.value < other.value

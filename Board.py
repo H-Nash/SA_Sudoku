@@ -31,11 +31,27 @@ class Board:
         L = np.asarray([[(self.board[y,x].probability() if self.board[y,x].value == 0 else -1) for x in range(9)] for y in range(9)])
         return L
     
+    def peers(self,r,c):
+        b_s = lambda x: 3*(x//3)
+        b_e = lambda x: 3*((x//3)+1)#-1
+        return np.unique(np.concatenate((self.board[:,c].flatten(), self.board[r,:].flatten(), self.board[b_s(r):b_e(r),b_s(c):b_e(c)].flatten())))
+    
     # Act on elements with best probability of conclusion
     def best_choices(self):
         pl = self.probability()
         pl = np.where(pl == pl.max())
         return pl
+
+    def undo(self,r,c,v):
+        self.board[r,c].setValue(0, u=True)
+        b_s = lambda x: 3*(x//3)
+        b_e = lambda x: 3*((x//3)+1)#-1
+
+        # runtime of 9 instead of >27
+        for k in range(9):
+            self.board[k,c].put(v)
+            self.board[r,k].put(v)
+            self.board[b_s(r)+(k//3), b_s(c)+(k%3)].put(v)
 
     def setCell(self, r, c, v):
         self.board[r,c].setValue(v)
@@ -51,14 +67,12 @@ class Board:
     def erroneous(self, r,c):
         b_s = lambda x: 3*(x//3)
         b_e = lambda x: 3*((x//3)+1)
-
         v,h,b = [self.board[:,c].flatten(), self.board[r,:].flatten(), self.board[b_s(r):b_e(r),b_s(c):b_e(c)].flatten()]
         V = (set(v) == len(v))
         H = (set(h) == len(h))
         B = (set(b) == len(b))
         return V and H and B
 
-    
     def candidacy(self):
         L = np.asarray([[self.board[y,x].proplen() for x in range(9)] for y in range(9)])
         return L
@@ -67,7 +81,7 @@ class Board:
         for y in range(9):
             for x in range(9):
                 if not self.board[y,x].static:
-                    self.c_map[y,x] = 2 if self.erroneous(y,x) else 0
+                    self.c_map[y,x] = 2 if -self.erroneous(y,x) else 0
 
     def __str__(self):
         self.color_errors()
