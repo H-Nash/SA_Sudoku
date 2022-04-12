@@ -5,6 +5,7 @@ class Cell:
         self.value = start_value
         self.candidates = set(list([i for i in range(1,10)]))
         self.probability = lambda: 1/len(self.candidates) if len(self.candidates) > 0 else -1
+        self.static = False
 
     def setValue(self, value):
         if value in self.candidates:
@@ -29,3 +30,6 @@ class Cell:
             return self.value == other
         elif type(other) == type(Cell):
             return self.value == other.value
+
+    def __hash__(self):
+        return hash(self.value)
