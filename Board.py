@@ -1,82 +1,37 @@
 import os, sys
+from pydoc import Doc
 import numpy as np
-import random as r
+import random as R
 import time as t
-
 import colorama as rgb
+import copy
 
-BLANK = 0
+from Cell import Cell
 
-# https://stackoverflow.com/questions/45471152/how-to-create-a-sudoku-puzzle-in-python
 class Board:
-    def __init__(self, seed =None):
-        self.R = r.Random().seed(t.time())
-        self.board = np.full((9,9),0)
-        self.c_map = np.full((9,9),0) #for color mapping the output
-        if seed is not None:
-            self.__fill(seed)
-        else:
-            self.__fill(6)
+    def __init__(self):
+        vCell = np.vectorize(Cell)
+        self.board = vCell(np.full((9,9), 0))
+        self.c_map = np.full((9,9), 0)
+        rgb.init()
+        self.colors = [rgb.Fore.WHITE, rgb.Fore.GREEN, rgb.Fore.RED]
 
-    def __fill(self, seed):
-        for i in range(seed):
-            x = r.randrange(0,9)
-            y = r.randrange(0,9)
-            n = r.randrange(1,9)
-
-            self.board[y,x] = n
-            
-            iter = 1
-            while(self.board_error(gt=BLANK) > 0):
-                if iter%10 == 0:
-                    self.board[y,x] = BLANK
-                    x = r.randrange(0,9)
-                    y = r.randrange(0,9)
-
-                n = r.randrange(1,9)
-                self.board[y,x] = n
-            self.c_map[y,x] = 1
-            
+    def populate(self, seed=6):
+        R.seed(t.time())
+        for s in range(seed):
+            r = R.randrange(0,9)
+            c = R.randrange(0,9)
+            self.c_map[r,c] = 1
+            while(self.board[r,c] == 0):
+                v = R.randrange(1,10)
+                self.setCell(r,c,v)
+                self.board[r,c].static = True
     
-    def print(self, show_errors=False):
-        colors = [rgb.Fore.WHITE, rgb.Fore.GREEN, rgb.Fore.RED]
-
-        if show_errors:
-            self.board_error(gt=BLANK, color=True)
-
-        for y in range(9):
-            if y > 0 and y%3 == 0:
-                print(colors[0]+''.join(['-' for i in range(21)]))
-
-            for x in range(9):
-                if x > 0 and x%3 == 0:
-                    print(colors[0]+"|", end=" ")
-                o = str(self.board[y,x]) if self.board[y,x] > BLANK else " "
-                print(colors[self.c_map[y,x]] + o, end=" ")
-
-            print()
-        print(colors[0])
-        
-
-    #HELPER functions
-    def peer_horizon(self, cell, gt=None, board=None): # <-->
-        board = self.board if board is None else board
-
-        x,y = cell #tuple
-        temp = board[y,:]
-        if gt is not None:
-            temp = temp[temp>gt]
-        return list(temp)
+    def probability(self):
+        L = np.asarray([[(self.board[y,x].probability() if self.board[y,x].value == 0 else -1) for x in range(9)] for y in range(9)])
+        return L
     
-    def peer_vertical(self,cell, gt=None, board=None): # ^|v
-        board = self.board if board is None else board
-
-        x,y = cell #tuple
-        temp = board[:,x]
-        if gt is not None:
-            temp = temp[temp>gt]
-        return list(temp)
-    
+<<<<<<< HEAD
     def peer_block(self,cell, gt=None, board=None): # get 3x3 grid segment :: return as 1d list
         board = self.board if board is None else board
 
@@ -121,10 +76,58 @@ class Board:
         if color:
             self.colorize_errors(gt)
         return o
+=======
+    def peers(self,r,c):
+        b_s = lambda x: 3*(x//3)
+        b_e = lambda x: 3*((x//3)+1)#-1
+        return np.unique(np.concatenate((self.board[:,c].flatten(), self.board[r,:].flatten(), self.board[b_s(r):b_e(r),b_s(c):b_e(c)].flatten())))
     
-    def colorize_errors(self, gt=None):
+    # Act on elements with best probability of conclusion
+    def best_choices(self):
+        pl = self.probability()
+        pl = np.where(pl == pl.max())
+        return pl
+
+    def undo(self,r,c,v):
+        self.board[r,c].setValue(0, u=True)
+        b_s = lambda x: 3*(x//3)
+        b_e = lambda x: 3*((x//3)+1)#-1
+
+        # runtime of 9 instead of >27
+        for k in range(9):
+            self.board[k,c].put(v)
+            self.board[r,k].put(v)
+            self.board[b_s(r)+(k//3), b_s(c)+(k%3)].put(v)
+
+    def setCell(self, r, c, v):
+        self.board[r,c].setValue(v)
+        b_s = lambda x: 3*(x//3)
+        b_e = lambda x: 3*((x//3)+1)#-1
+
+        # runtime of 9 instead of >27
+        for k in range(9):
+            self.board[k,c].drop(v)
+            self.board[r,k].drop(v)
+            self.board[b_s(r)+(k//3), b_s(c)+(k%3)].drop(v)
+    
+    def erroneous(self, r,c):
+        b_s = lambda x: 3*(x//3)
+        b_e = lambda x: 3*((x//3)+1)
+        v,h,b = [self.board[:,c].flatten(), self.board[r,:].flatten(), self.board[b_s(r):b_e(r),b_s(c):b_e(c)].flatten()]
+        V = (set(v) == len(v))
+        H = (set(h) == len(h))
+        B = (set(b) == len(b))
+        return V and H and B
+
+    def candidacy(self):
+        L = np.asarray([[self.board[y,x].proplen() for x in range(9)] for y in range(9)])
+        return L
+>>>>>>> 080df9d0a2cf94290c2af08a1c786556d708e2e2
+    
+    def color_errors(self):
         for y in range(9):
             for x in range(9):
+<<<<<<< HEAD
                 if self.cell_error(x,y, BLANK) > 0:
                     self.c_map[y,x] = 2
                 else:
@@ -165,3 +168,18 @@ class Board:
                 self.board[y,x] = v
             else:
                 return self.board[y,x]
+=======
+                if not self.board[y,x].static:
+                    self.c_map[y,x] = 2 if -self.erroneous(y,x) else 0
+
+    def __str__(self):
+        self.color_errors()
+        L = ""
+        for y in range(9):
+            for x in range(9):
+                if x > 0 and x%3 == 0:
+                    L += "| "
+                L += (self.colors[self.c_map[y,x]] + str(self.board[y,x].value) + self.colors[0] if self.board[y,x].value > 0 else " ") + " "
+            L += '\n' + (''.join(["-" for i in range(21)]) + "\n" if y<8 and (y+1)%3 == 0 else "")
+        return L
+>>>>>>> 080df9d0a2cf94290c2af08a1c786556d708e2e2
