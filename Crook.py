@@ -1,4 +1,6 @@
+from operator import truediv
 import os, sys
+from turtle import Turtle
 import numpy as np
 import copy
 
@@ -17,23 +19,38 @@ class Crook:
         return np.count_nonzero(cand == 0) > 0
     
     # Brute force Depth First Search (Crook's)
-    def forward_propagate(self, game=None):
+    def recursive(self, game=None, r=0,c=0):
         game = game if game != None else self.game
-
-        if self.startback(game.candidacy()):
-            return False
-        if np.count_nonzero(game.candidacy() == None) == 81:
-            return game
-
-        choices = game.best_choices()
-        for r,c in zip(choices[0], choices[1]):
-            G = copy.deepcopy(game)
-            for nv in list(G.board[r,c].candidates):
-                G.setCell(r,c,nv)
-                Res = self.forward_propagate(G)
-                if type(Res) == type(Board):
-                    return Res
+        if game.board[r,c].value == 0:
+            V = 0
+            v = game.board[r,c].candidates
+            while(len(v) > 0):
+                game.setCell(r,c,V)
+                if np.count_nonzero(game.candidacy() == 0) > 0:
+                    game.board.undo(r,c,V)
+                elif game.board[r,c].value != 0:
+                    state = self.recursive(copy.deepcopy(game),(r+1 if (c+1)%9 == 0 else r ),(c+1)%9)
+                    if state == False:
+                        game.board.undo(r,c,V)
+                    if state != False:
+                        return state
+        return game
+    
+    def backtracking(self, game=None):
+        game = game if game != None else self.game
+        RC = game.best_choices()
+        if RC == None:
+            return True
+        for r,c in zip(RC[0],RC[1]):
+            for v in game.board[r,c].candidates:
+                if game.valid(r,c,v):
+                    game.setCell(r,c,v)
+                if self.backtracking():
+                    return True
+                game.undo(r,c,v)
         return False
+
+
     
     # Raw iterative transaction
     def iterative(self):
@@ -42,6 +59,7 @@ class Crook:
                 if self.game.board[y,x].value == 0:
                     for v in self.game.board[y,x].candidates:
                         self.game.setCell(y,x,v)
+                        print(np.count_nonzero(self.game.candidacy() == 0))
                         if self.game.board[y,x].value != 0:
                             break
                         else:
@@ -59,5 +77,4 @@ class Crook:
                 inter = self.game.board[y,x].candidates.intersection(major)
                 core = self.game.board[y,x].candidates - inter
                 self.game.board[y,x].candidates = core
-        print(self.game.candidacy())
         pass

@@ -31,52 +31,6 @@ class Board:
         L = np.asarray([[(self.board[y,x].probability() if self.board[y,x].value == 0 else -1) for x in range(9)] for y in range(9)])
         return L
     
-<<<<<<< HEAD
-    def peer_block(self,cell, gt=None, board=None): # get 3x3 grid segment :: return as 1d list
-        board = self.board if board is None else board
-
-        x,y = cell #tuple
-        bc0 = lambda c : 3*(c//3)
-        bc1 = lambda c: 3*((c//3)+1)-1
-        temp = board[bc0(y):bc1(y)][bc0(x):bc1(x)].flatten()
-        if gt is not None:
-            temp = temp[temp>gt]
-        return list(temp) 
-
-    def error_check(self, region): # region take as list from peer functions
-        return (len(region) - len(set(region)))
-    
-    #Sum of error from all regions for given cell
-    def cell_error(self, x,y, gt=None, board=None):
-        board = self.board if board is None else board
-        c = (x, y)
-        regions = [self.peer_horizon(c, gt), self.peer_vertical(c, gt), self.peer_block(c, gt)]
-        err_batt = sum([self.error_check(region) for region in regions])
-        return err_batt
-    
-    def cell_possibilities(self, x, y, board=None):
-        M = [i for i in range(1,10)]
-        board = self.board if board is None else board
-        c = (x, y)
-        if board[y,x] > 0:
-            return []
-        regions = [self.peer_horizon(c, gt=0), self.peer_vertical(c, gt=0), self.peer_block(c, gt=0)]
-        collect = set()
-        for r in regions:
-            collect = set(collect).union(set(r))
-        collect = set(collect).symmetric_difference(set(M))
-        return collect
-
-    def board_error(self, gt=None, color=False):
-        o = sum([
-            sum([
-                self.cell_error(x,y, gt) for x in range(9)
-                ]) for y in range(9)
-        ])
-        if color:
-            self.colorize_errors(gt)
-        return o
-=======
     def peers(self,r,c):
         b_s = lambda x: 3*(x//3)
         b_e = lambda x: 3*((x//3)+1)#-1
@@ -110,6 +64,15 @@ class Board:
             self.board[r,k].drop(v)
             self.board[b_s(r)+(k//3), b_s(c)+(k%3)].drop(v)
     
+    def valid(self,r,c,v):
+        b_s = lambda x: 3*(x//3)
+        b_e = lambda x: 3*((x//3)+1)
+        l = list(self.board[:,c].flatten()) + list(self.board[r,:].flatten()) + list(self.board[b_s(r):b_e(r),b_s(c):b_e(c)].flatten())
+        for i in l:
+            if i == v:
+                return False
+        return True
+    
     def erroneous(self, r,c):
         b_s = lambda x: 3*(x//3)
         b_e = lambda x: 3*((x//3)+1)
@@ -122,55 +85,23 @@ class Board:
     def candidacy(self):
         L = np.asarray([[self.board[y,x].proplen() for x in range(9)] for y in range(9)])
         return L
->>>>>>> 080df9d0a2cf94290c2af08a1c786556d708e2e2
     
     def color_errors(self):
         for y in range(9):
             for x in range(9):
-<<<<<<< HEAD
-                if self.cell_error(x,y, BLANK) > 0:
-                    self.c_map[y,x] = 2
-                else:
-                    if self.c_map[y,x] != 1:
-                        self.c_map[y,x] = 0
-    
-    # def error_matrix(self, board=None, cmap=None):
-    #     board = self.board if board is None else board
-    #     cmap = self.c_map if cmap is None else cmap
-
-    #     arr = np.asarray([
-    #         [
-    #             self.cell_error(x,y, board=board) for x in range(9)
-    #             ] for y in range(9)
-    #     ]) * (cmap - 1)
-    #     return arr
-    
-    def prob_matrix(self, board=None, cmap=None):
-        board = self.board if board is None else board
-        cmap = self.c_map if cmap is None else cmap
-        prob_arr = np.asarray([
-            [
-                list(self.cell_possibilities(x,y, board=board)) for x in range(9)
-                ] for y in range(9)
-        ])
-        arr = np.asarray([ [ len(x) for x in y ] for y in prob_arr ]) * abs(cmap-1)
-        return list([prob_arr, arr])
-    
-    def get_board(self):
-        return self.board
-    
-    def get_mask(self):
-        return self.c_map
-    
-    def value(self, x,y,v=None):
-        if (x > -1 and x < 10) and (y > -1 and y < 10):
-            if v is not None:
-                self.board[y,x] = v
-            else:
-                return self.board[y,x]
-=======
                 if not self.board[y,x].static:
                     self.c_map[y,x] = 2 if -self.erroneous(y,x) else 0
+    
+    def getBoard(self):
+        b = [[self.board[r,c].value for c in range(9)] for r in range(9)]
+        return b
+    
+    def apply_solution(self, inc_solution):
+        if len(inc_solution) == 0:
+            return
+        for r in range(9):
+            for c in range(9):
+                self.board[r,c].value = inc_solution[r][c]
 
     def __str__(self):
         self.color_errors()
@@ -182,4 +113,3 @@ class Board:
                 L += (self.colors[self.c_map[y,x]] + str(self.board[y,x].value) + self.colors[0] if self.board[y,x].value > 0 else " ") + " "
             L += '\n' + (''.join(["-" for i in range(21)]) + "\n" if y<8 and (y+1)%3 == 0 else "")
         return L
->>>>>>> 080df9d0a2cf94290c2af08a1c786556d708e2e2
