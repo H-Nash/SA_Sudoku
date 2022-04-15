@@ -11,5 +11,10 @@ or
 `conda install numpy`
 
 ### Running the program
+To run the program enter the command
+`python Sudoku.py`
+or
+`python3 Sudoku.py`
 
 ### Features
+This program creates a randomized sudoku board and then utilizing crooks algorithm solves the board.
