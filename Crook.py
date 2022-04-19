@@ -59,5 +59,5 @@ class Crook:
                 inter = self.game.board[y,x].candidates.intersection(major)
                 core = self.game.board[y,x].candidates - inter
                 self.game.board[y,x].candidates = core
-        print(self.game.candidacy())
+        #print(self.game.candidacy())
         pass
