@@ -17,6 +17,7 @@ class Crook:
         return np.count_nonzero(cand == 0) > 0
     
     # Brute force Depth First Search (Crook's)
+    # Takes forever to run
     def forward_propagate(self, game=None):
         game = game if game != None else self.game
 
@@ -36,6 +37,7 @@ class Crook:
         return False
     
     # Raw iterative transaction
+    # Does not complete task
     def iterative(self):
         for y in range(9):
             for x in range(9):

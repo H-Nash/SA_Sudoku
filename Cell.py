@@ -11,8 +11,8 @@ class Cell:
     def setValue(self, value, u=False):
         if value in self.candidates:
             self.value = value
-            if u == False:
-                self.candidates = set()
+            # if u == False:
+            #     self.candidates = set()
         #self.candidates = self.drop(value)
 
     def put(self,value):

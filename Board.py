@@ -64,6 +64,15 @@ class Board:
             self.board[r,k].drop(v)
             self.board[b_s(r)+(k//3), b_s(c)+(k%3)].drop(v)
     
+    def valid(self,r,c,v):
+        b_s = lambda x: 3*(x//3)
+        b_e = lambda x: 3*((x//3)+1)
+        l = list(self.board[:,c].flatten()) + list(self.board[r,:].flatten()) + list(self.board[b_s(r):b_e(r),b_s(c):b_e(c)].flatten())
+        for i in l:
+            if i == v:
+                return False
+        return True
+    
     def erroneous(self, r,c):
         b_s = lambda x: 3*(x//3)
         b_e = lambda x: 3*((x//3)+1)
@@ -82,6 +91,17 @@ class Board:
             for x in range(9):
                 if not self.board[y,x].static:
                     self.c_map[y,x] = 2 if -self.erroneous(y,x) else 0
+    
+    def getBoard(self):
+        b = [[self.board[r,c].value for c in range(9)] for r in range(9)]
+        return b
+    
+    def apply_solution(self, inc_solution):
+        if len(inc_solution) == 0:
+            return
+        for r in range(9):
+            for c in range(9):
+                self.board[r,c].value = inc_solution[r][c]
 
     def __str__(self):
         self.color_errors()
