@@ -2,7 +2,7 @@
 ## Authors: Eric DiGioacchino & Nash Henry
 
 ### Dependencies
-This program makes use of 2 third-party dependency - Numpy & pulp
+This program makes use of 2 third-party dependency - Numpy & pulp.
 And can be run using the link supplied below.
 
 ```
